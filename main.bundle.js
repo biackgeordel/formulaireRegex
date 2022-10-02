@@ -11,16 +11,22 @@ var form = document.querySelector("form");
 var firstName = document.querySelector("#firstName");
 var password = document.querySelector("#password");
 var email = document.querySelector("#email");
-var btn = document.querySelector(" form .btn");
+var validEmail, validPassword, validFirstName;
+var parentPassword = password.parentElement;
+var divError = document.createElement("ul");
+divError.classList.add("no-valid");
+parentPassword.after(divError);
+var div = document.createElement("div");
+form.after(div);
 
-var errorFirstName = function errorFirstName() {
-  firstName.addEventListener("input", function (event) {
-    console.log(event.target.value);
-    var regex = /^[a-z]+[-| ]{0,1}[a-z]+$/g;
-    var prenom = "".concat(event.target.value);
+var controllerFirstName = function controllerFirstName(event) {
+  console.log(event.target.value);
+  var valid = false;
+  var regex = /^[a-z]+[-| ]{0,1}[a-z]+$/g;
+  var prenom = "".concat(event.target.value);
 
-    if (regex.test(prenom)) {
-      // divError.textContent = " ";
+  if (prenom.length !== 0) {
+    if (valid = regex.test(prenom)) {
       if (firstName.classList.contains("inputColor-invalid")) {
         firstName.classList.replace("inputColor-invalid", "inputColor-valid");
       } else {
@@ -33,72 +39,114 @@ var errorFirstName = function errorFirstName() {
         firstName.classList.add("inputColor-invalid");
       }
     }
-  }); //   return true;
+  } else {
+    firstName.classList.remove("inputColor-invalid");
+    firstName.classList.remove("inputColor-valid");
+  }
+
+  return valid;
 };
 
-var errorPassword = function errorPassword() {
-  var parentPassword = password.parentElement;
-  var divError = document.createElement("ul");
-  divError.classList.add("no-valid");
-  parentPassword.after(divError);
-  password.addEventListener("input", function (event) {
-    console.log(event.target.value);
-    var pass = "".concat(event.target.value);
+var controllerPassword = function controllerPassword(event) {
+  var valid = false;
+  var validEnd = false;
+  console.log(event.target.value);
+  var pass = "".concat(event.target.value);
 
-    if (pass.length !== 0) {
-      divError.classList.replace("no-valid", "valid");
+  if (pass.length !== 0) {
+    divError.classList.replace("no-valid", "valid");
 
-      if (/^[A-Z]+/.test(pass)) {
-        divError.innerHTML = "<li>\n        <i class=\"fas fa-check\"></i></i>Mot de passe commen\xE7ant par un majuscule</li>";
+    if (/[a-z-A-z-0-9]{5,}/.test(pass)) {
+      divError.innerHTML = "<li>\n        <i class=\"fas fa-check\"></i>Mot de passe de plus de 5 caract\xE8res</li>"; //on verifie les premiers caractères du mot de passe
+
+      if (valid = /^[A-Z]+/.test(pass)) {
+        divError.innerHTML += "<li>\n        <i class=\"fas fa-check\"></i></i>Mot de passe commen\xE7ant par un majuscule</li>";
       } else {
-        divError.innerHTML = "<li><i class=\"fas fa-times\"></i>Mot de passe commen\xE7ant par un majuscule</li>";
+        divError.innerHTML += "<li><i class=\"fas fa-times\"></i>Mot de passe commen\xE7ant par un majuscule</li>";
       }
 
-      if (/[$&#]+$/g.test(pass)) {
-        divError.innerHTML += "<li>\n    <i class=\"fas fa-check\"></i>\n    Mot de passe se terminant par des caract\xE8res sp\xE9ciaux</li>";
-        password.classList.add("inputColor-valid");
-        password.classList.remove("inputColor-invalid");
+      if (validEnd = /[$&#]+$/g.test(pass)) {
+        divError.innerHTML += "<li>\n      <i class=\"fas fa-check\"></i>\n      Mot de passe se terminant par des caract\xE8res sp\xE9ciaux</li>";
+
+        if (valid && validEnd) {
+          password.classList.remove("inputColor-invalid");
+          password.classList.add("inputColor-valid");
+        }
       } else {
         divError.innerHTML += "<li><i class=\"fas fa-times\"></i> Mot de passe se terminant par des caract\xE8res sp\xE9ciaux</li>";
-        password.classList.replace("inputColor-valid", "inputColor-invalid");
-      }
-
-      if (pass.length >= 5) {
-        divError.innerHTML += "<li>\n        <i class=\"fas fa-check\"></i>Mot de passe de plus de 5 caract\xE8res</li>";
-      } else {
-        divError.innerHTML += "<li><i class=\"fas fa-times\"></i>Mot de passe de plus de 5 caract\xE8res</li>";
-      }
-
-      setTimeout(function () {
-        console.log(document.querySelectorAll("ul>li"));
-        var liste = document.querySelectorAll("ul>li");
-        liste.forEach(function (element) {
-          console.log(element.classList.add("apparition"));
-        });
-      }, 1000);
-    } else {
-      if (password.classList.contains("inputColor-valid")) {
+        password.classList.add("inputColor-invalid");
         password.classList.remove("inputColor-valid");
-      } else if (password.classList.contains("inputColor-invalid")) {
-        password.classList.remove("inputColor-invalid");
       }
-
-      divError.innerHTML = " ";
-      divError.classList.replace("valid", "no-valid");
+    } else {
+      divError.innerHTML = "<li><i class=\"fas fa-times\"></i>Mot de passe de plus de 5 caract\xE8res</li>";
+      password.classList.add("inputColor-invalid");
     }
-  });
-}; // parentPassword.after(divError);
 
+    setTimeout(function () {
+      console.log(document.querySelectorAll("ul>li"));
+      var liste = document.querySelectorAll("ul>li");
+      liste.forEach(function (element) {
+        console.log(element.classList.add("apparition"));
+      });
+    }, 1000);
+  } else {
+    //suppressions des classes quand la valeur de pass  est 0
+    password.classList.remove("inputColor-invalid");
+    password.classList.remove("inputColor-valid");
+    password.classList.remove("inputColor-warning");
+    divError.innerHTML = " ";
+    divError.classList.replace("valid", "no-valid");
+  }
+
+  return valid && validEnd ? true : false;
+};
+
+var controllerEmail = function controllerEmail(event) {
+  var valEmail = "".concat(event.target.value);
+  var test = false;
+
+  if (valEmail.length !== 0) {
+    if (test = /^[a-z]+[a-z-0-9]+@[a-z]+\.[a-z]+$/.test(valEmail)) {
+      email.classList.add("inputColor-valid");
+      email.classList.remove("inputColor-invalid");
+    } else {
+      email.classList.add("inputColor-invalid");
+      email.classList.remove("inputColor-valid");
+    }
+  } else {
+    email.classList.remove("inputColor-invalid");
+    email.classList.remove("inputColor-valid");
+  }
+
+  return test;
+};
 
 email.addEventListener("input", function (event) {
-  console.log(event.target.value);
+  validEmail = controllerEmail(event);
+  console.log(validEmail);
+});
+password.addEventListener("input", function (event) {
+  validPassword = controllerPassword(event);
+  console.log(validPassword);
+});
+firstName.addEventListener("input", function (event) {
+  validFirstName = controllerFirstName(event);
+  console.log(validFirstName);
 });
 form.addEventListener("submit", function (event) {
-  console.log(event.target);
   event.preventDefault();
+  div.textContent = " ";
+  console.log(validEmail);
+  console.log("validPassword :", validPassword);
+  console.log("firstName :", validFirstName);
+
+  if (validEmail && validFirstName && validPassword) {
+    var data = new FormData(form);
+    data.forEach(function (element) {
+      console.log(element);
+    });
+  }
 });
-errorFirstName();
-errorPassword();
 
 /***/ }),
 
@@ -122,7 +170,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nhtml {\n  font-size: 62.5%;\n}\n\n:root {\n  --colordefault: #2c3e50;\n  --primary: #3498db;\n  --warning: #f1c40f;\n  --danger: #c0392b;\n  --colorFond: #70a1ff;\n  --purple: #e056fd;\n}\n\n.btn {\n  padding: 1rem 1.5rem;\n  text-align: center;\n  font-size: 1.8rem;\n  font-weight: 700;\n  color: white;\n  background: var(--colordefault);\n  margin: 1rem;\n  border: 0;\n  border-radius: 0.5rem;\n  cursor: pointer;\n}\n.btn-primary {\n  background: var(--primary);\n}\n\nbody,\n* {\n  font-family: \"Montserrat\", sans-serif;\n}\n\n.container {\n  margin: 5rem auto;\n  max-width: 50%;\n}\n@media screen and (max-width: 700px) {\n  .container {\n    max-width: 100%;\n  }\n}\n\nform {\n  display: grid;\n  grid-template-columns: 1fr;\n  background: var(--colorFond);\n  grid-auto-rows: auto;\n  text-align: center;\n  font-size: 1.6rem;\n  overflow: hidden;\n  row-gap: 2rem;\n}\nform .form-item-0 {\n  font-size: 3rem;\n  padding: 2rem 0;\n}\nform div {\n  display: flex;\n  justify-content: space-evenly;\n}\nform div label {\n  flex: 0 0 150px;\n  text-align: right;\n  line-height: 3.5rem;\n}\n@media screen and (max-width: 700px) {\n  form div label {\n    flex: 0 1 30%;\n  }\n}\nform div input {\n  padding: 0.8rem 1rem;\n  flex: 0.5 0 auto;\n  border-radius: 0.5rem;\n  border: 0;\n  outline: 0;\n}\n\n.error {\n  color: white;\n  display: block;\n  width: 90%;\n  transition: all 0.5s;\n  margin: auto;\n}\n\n.valid {\n  color: white;\n  display: block;\n  width: 90%;\n  text-align: left;\n  margin: auto;\n}\n\n.no-valid {\n  display: none;\n}\n\n.inputColor-valid {\n  box-shadow: 0px 0px 4px 4px #05c46b;\n}\n.inputColor-invalid {\n  box-shadow: 0px 0px 4px 4px #ff3f34;\n}\n.inputColor-warning {\n  box-shadow: 0px 0px 4px 4px var(--warning);\n}\n\nul {\n  list-style: none;\n}\n\nli {\n  padding: 0.5rem 0;\n  line-height: 2rem;\n}\nli i {\n  color: white;\n  margin-right: 0.5rem;\n}\nli .fa-check {\n  color: #009432;\n  padding: 0.5rem 0;\n}\nli .fa-times {\n  color: var(--danger);\n  position: relative;\n  top: 0.1rem;\n}\n\nli:nth-child(1) {\n  transform: translateY(-10px);\n  opacity: 0;\n  transition: all 0.8s;\n}\n\nli:nth-child(2) {\n  transform: translateY(-10px);\n  transition: all 0.8s 1.6s;\n  opacity: 0;\n}\n\nli:nth-child(3) {\n  transform: translateY(-10px);\n  transition: all 0.8s 2.4s;\n  opacity: 0;\n}\n\n.apparition:nth-child(1) {\n  transform: translateY(0px);\n  opacity: 1;\n}\n\n.apparition:nth-child(2) {\n  transform: translateY(0px);\n  opacity: 1;\n}\n\n.apparition:nth-child(3) {\n  transform: translateY(0px);\n  opacity: 1;\n}", "",{"version":3,"sources":["webpack://./src/scss/_rest.scss","webpack://./src/scss/style.scss","webpack://./src/scss/_variables.scss","webpack://./src/scss/_bouton.scss"],"names":[],"mappings":"AAAA;EACE,SAAA;EACA,UAAA;EACA,sBAAA;ACCF;;ADCA;EACE,gBAAA;ACEF;;ACRA;EACE,uBAAA;EACA,kBAAA;EACA,kBAAA;EACA,iBAAA;EACA,oBAAA;EACA,iBAAA;ADWF;;AEjBA;EACE,oBAAA;EACA,kBAAA;EACA,iBAAA;EACA,gBAAA;EACA,YAAA;EACA,+BAAA;EACA,YAAA;EACA,SAAA;EACA,qBAAA;EACA,eAAA;AFoBF;AEnBE;EACE,0BAAA;AFqBJ;;AA9BA;;EAGE,qCAAA;AAgCF;;AA9BA;EACE,iBAAA;EACA,cAAA;AAiCF;AAhCE;EAHF;IAII,eAAA;EAmCF;AACF;;AAjCA;EACE,aAAA;EACA,0BAAA;EACA,4BAAA;EACA,oBAAA;EACA,kBAAA;EACA,iBAAA;EACA,gBAAA;EACA,aAAA;AAoCF;AAnCE;EACE,eAAA;EACA,eAAA;AAqCJ;AAnCE;EACE,aAAA;EACA,6BAAA;AAqCJ;AAhCI;EACE,eAAA;EACA,iBAAA;EACA,mBAAA;AAkCN;AAjCM;EAJF;IAKI,aAAA;EAoCN;AACF;AAlCI;EACE,oBAAA;EACA,gBAAA;EACA,qBAAA;EACA,SAAA;EACA,UAAA;AAoCN;;AAhCA;EACE,YAAA;EACA,cAAA;EAEA,UAAA;EACA,oBAAA;EACA,YAAA;AAkCF;;AAhCA;EACE,YAAA;EACA,cAAA;EACA,UAAA;EACA,gBAAA;EACA,YAAA;AAmCF;;AAjCA;EACE,aAAA;AAoCF;;AAjCE;EACE,mCAAA;AAoCJ;AAlCE;EACE,mCAAA;AAoCJ;AAlCE;EACE,0CAAA;AAoCJ;;AAjCA;EACE,gBAAA;AAoCF;;AAlCA;EACE,iBAAA;EACA,iBAAA;AAqCF;AApCE;EACE,YAAA;EACA,oBAAA;AAsCJ;AApCE;EACE,cAAA;EACA,iBAAA;AAsCJ;AApCE;EACE,oBAAA;EACA,kBAAA;EACA,WAAA;AAsCJ;;AAnCA;EACE,4BAAA;EACA,UAAA;EACA,oBAAA;AAsCF;;AApCA;EACE,4BAAA;EACA,yBAAA;EACA,UAAA;AAuCF;;AArCA;EACE,4BAAA;EACA,yBAAA;EACA,UAAA;AAwCF;;AAtCA;EACE,0BAAA;EACA,UAAA;AAyCF;;AAvCA;EACE,0BAAA;EACA,UAAA;AA0CF;;AAxCA;EACE,0BAAA;EACA,UAAA;AA2CF","sourcesContent":["* {\r\n  margin: 0;\r\n  padding: 0;\r\n  box-sizing: border-box;\r\n}\r\nhtml {\r\n  font-size: 62.5%;\r\n}\r\n","@import \"rest\";\r\n@import \"variables\";\r\n@import \"bouton\";\r\nbody,\r\n* {\r\n  // font-family: \"Roboto\", sans-serif;\r\n  font-family: \"Montserrat\", sans-serif;\r\n}\r\n.container {\r\n  margin: 5rem auto;\r\n  max-width: 50%;\r\n  @media screen and (max-width: 700px) {\r\n    max-width: 100%;\r\n  }\r\n}\r\nform {\r\n  display: grid;\r\n  grid-template-columns: 1fr;\r\n  background: var(--colorFond);\r\n  grid-auto-rows: auto;\r\n  text-align: center;\r\n  font-size: 1.6rem;\r\n  overflow: hidden;\r\n  row-gap: 2rem;\r\n  .form-item-0 {\r\n    font-size: 3rem;\r\n    padding: 2rem 0;\r\n  }\r\n  div {\r\n    display: flex;\r\n    justify-content: space-evenly;\r\n    @media screen and (max-width: 700px) {\r\n      // justify-content: center;\r\n    }\r\n\r\n    label {\r\n      flex: 0 0 150px;\r\n      text-align: right;\r\n      line-height: 3.5rem;\r\n      @media screen and (max-width: 700px) {\r\n        flex: 0 1 30%;\r\n      }\r\n    }\r\n    input {\r\n      padding: 0.8rem 1rem;\r\n      flex: 0.5 0 auto;\r\n      border-radius: 0.5rem;\r\n      border: 0;\r\n      outline: 0;\r\n    }\r\n  }\r\n}\r\n.error {\r\n  color: white;\r\n  display: block;\r\n  // background: var(--purple);\r\n  width: 90%;\r\n  transition: all 0.5s;\r\n  margin: auto;\r\n}\r\n.valid {\r\n  color: white;\r\n  display: block;\r\n  width: 90%;\r\n  text-align: left;\r\n  margin: auto;\r\n}\r\n.no-valid {\r\n  display: none;\r\n}\r\n.inputColor {\r\n  &-valid {\r\n    box-shadow: 0px 0px 4px 4px #05c46b;\r\n  }\r\n  &-invalid {\r\n    box-shadow: 0px 0px 4px 4px #ff3f34;\r\n  }\r\n  &-warning {\r\n    box-shadow: 0px 0px 4px 4px var(--warning);\r\n  }\r\n}\r\nul {\r\n  list-style: none;\r\n}\r\nli {\r\n  padding: 0.5rem 0;\r\n  line-height: 2rem;\r\n  i {\r\n    color: white;\r\n    margin-right: 0.5rem;\r\n  }\r\n  .fa-check {\r\n    color: #009432;\r\n    padding: 0.5rem 0;\r\n  }\r\n  .fa-times {\r\n    color: var(--danger);\r\n    position: relative;\r\n    top: 0.1rem;\r\n  }\r\n}\r\nli:nth-child(1) {\r\n  transform: translateY(-10px);\r\n  opacity: 0;\r\n  transition: all 0.8s;\r\n}\r\nli:nth-child(2) {\r\n  transform: translateY(-10px);\r\n  transition: all 0.8s 1.6s;\r\n  opacity: 0;\r\n}\r\nli:nth-child(3) {\r\n  transform: translateY(-10px);\r\n  transition: all 0.8s 2.4s;\r\n  opacity: 0;\r\n}\r\n.apparition:nth-child(1) {\r\n  transform: translateY(0px);\r\n  opacity: 1;\r\n}\r\n.apparition:nth-child(2) {\r\n  transform: translateY(0px);\r\n  opacity: 1;\r\n}\r\n.apparition:nth-child(3) {\r\n  transform: translateY(0px);\r\n  opacity: 1;\r\n}\r\n",":root {\r\n  --colordefault: #2c3e50;\r\n  --primary: #3498db;\r\n  --warning: #f1c40f;\r\n  --danger: #c0392b;\r\n  --colorFond: #70a1ff;\r\n  --purple: #e056fd;\r\n}\r\n",".btn {\r\n  padding: 1rem 1.5rem;\r\n  text-align: center;\r\n  font-size: 1.8rem;\r\n  font-weight: 700;\r\n  color: white;\r\n  background: var(--colordefault);\r\n  margin: 1rem;\r\n  border: 0;\r\n  border-radius: 0.5rem;\r\n  cursor: pointer;\r\n  &-primary {\r\n    background: var(--primary);\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n}\n\nhtml {\n  font-size: 62.5%;\n}\n\n:root {\n  --colordefault: #2c3e50;\n  --primary: #3498db;\n  --warning: #f1c40f;\n  --danger: #c0392b;\n  --colorFond: #70a1ff;\n  --purple: #e056fd;\n}\n\n.btn {\n  padding: 1rem 1.5rem;\n  text-align: center;\n  font-size: 1.5rem;\n  font-weight: 700;\n  color: white;\n  background: var(--colordefault);\n  margin: 1rem;\n  border: 0;\n  border-radius: 0.5rem;\n  cursor: pointer;\n}\n.btn-primary {\n  background: var(--primary);\n}\n\nbody,\n* {\n  font-family: \"Montserrat\", sans-serif;\n}\n\n.container {\n  margin: 5rem auto;\n  max-width: 50%;\n}\n@media screen and (max-width: 700px) {\n  .container {\n    max-width: 100%;\n  }\n}\n\nform {\n  display: grid;\n  grid-template-columns: 1fr;\n  background: var(--colorFond);\n  grid-auto-rows: auto;\n  text-align: center;\n  font-size: 1.6rem;\n  overflow: hidden;\n  row-gap: 2rem;\n}\nform .form-item-0 {\n  font-size: 1.8rem;\n  text-transform: uppercase;\n  color: white;\n  padding: 2rem 0;\n}\nform div {\n  display: flex;\n  justify-content: space-evenly;\n}\nform div label {\n  flex: 0 0 150px;\n  text-align: right;\n  line-height: 3.5rem;\n  font-size: 1.4rem;\n  text-transform: uppercase;\n  color: white;\n}\n@media screen and (max-width: 700px) {\n  form div label {\n    flex: 0 1 30%;\n  }\n}\nform div input {\n  padding: 0.8rem 1rem;\n  flex: 0.5 0 auto;\n  border-radius: 0.5rem;\n  border: 0;\n  outline: 0;\n}\n\n.error {\n  color: white;\n  display: block;\n  width: 90%;\n  transition: all 0.5s;\n  margin: auto;\n}\n\n.valid {\n  color: white;\n  display: block;\n  background: rgba(37, 204, 247, 0.1);\n  border-radius: 5px;\n  width: 90%;\n  padding: 1rem;\n  text-align: center;\n  margin: auto;\n}\n\n.no-valid {\n  display: none;\n}\n\n.inputColor-valid {\n  box-shadow: 0px 0px 4px 4px #05c46b;\n}\n.inputColor-invalid {\n  box-shadow: 0px 0px 4px 4px #ff3f34;\n}\n.inputColor-warning {\n  box-shadow: 0px 0px 4px 4px var(--warning);\n}\n\nul {\n  list-style: none;\n}\n\nli {\n  padding: 0.5rem 0;\n  line-height: 2rem;\n}\nli i {\n  color: white;\n  margin-right: 0.5rem;\n}\nli .fa-check {\n  color: #009432;\n  padding: 0.5rem 0;\n}\nli .fa-times {\n  color: var(--danger);\n  position: relative;\n  top: 0.1rem;\n}\n\nli:nth-child(1) {\n  transform: translateY(-10px);\n  opacity: 0;\n  transition: all 0.8s;\n}\n\nli:nth-child(2) {\n  transform: translateY(-10px);\n  transition: all 0.8s 1.6s;\n  opacity: 0;\n}\n\nli:nth-child(3) {\n  transform: translateY(-10px);\n  transition: all 0.8s 2.4s;\n  opacity: 0;\n}\n\n.apparition:nth-child(1) {\n  transform: translateY(0px);\n  opacity: 1;\n}\n\n.apparition:nth-child(2) {\n  transform: translateY(0px);\n  opacity: 1;\n}\n\n.apparition:nth-child(3) {\n  transform: translateY(0px);\n  opacity: 1;\n}\n\ninput {\n  transition: all 0.5s;\n}", "",{"version":3,"sources":["webpack://./src/scss/_rest.scss","webpack://./src/scss/style.scss","webpack://./src/scss/_variables.scss","webpack://./src/scss/_bouton.scss"],"names":[],"mappings":"AAAA;EACE,SAAA;EACA,UAAA;EACA,sBAAA;ACCF;;ADCA;EACE,gBAAA;ACEF;;ACRA;EACE,uBAAA;EACA,kBAAA;EACA,kBAAA;EACA,iBAAA;EACA,oBAAA;EACA,iBAAA;ADWF;;AEjBA;EACE,oBAAA;EACA,kBAAA;EACA,iBAAA;EACA,gBAAA;EACA,YAAA;EACA,+BAAA;EACA,YAAA;EACA,SAAA;EACA,qBAAA;EACA,eAAA;AFoBF;AEnBE;EACE,0BAAA;AFqBJ;;AA9BA;;EAGE,qCAAA;AAgCF;;AA9BA;EACE,iBAAA;EACA,cAAA;AAiCF;AAhCE;EAHF;IAII,eAAA;EAmCF;AACF;;AAjCA;EACE,aAAA;EACA,0BAAA;EACA,4BAAA;EACA,oBAAA;EACA,kBAAA;EACA,iBAAA;EACA,gBAAA;EACA,aAAA;AAoCF;AAnCE;EACE,iBAAA;EACA,yBAAA;EACA,YAAA;EACA,eAAA;AAqCJ;AAnCE;EACE,aAAA;EACA,6BAAA;AAqCJ;AAhCI;EACE,eAAA;EACA,iBAAA;EACA,mBAAA;EACA,iBAAA;EACA,yBAAA;EACA,YAAA;AAkCN;AAjCM;EAPF;IAQI,aAAA;EAoCN;AACF;AAlCI;EACE,oBAAA;EACA,gBAAA;EACA,qBAAA;EACA,SAAA;EACA,UAAA;AAoCN;;AAhCA;EACE,YAAA;EACA,cAAA;EAEA,UAAA;EACA,oBAAA;EACA,YAAA;AAkCF;;AAhCA;EACE,YAAA;EACA,cAAA;EACA,mCAAA;EACA,kBAAA;EACA,UAAA;EACA,aAAA;EACA,kBAAA;EACA,YAAA;AAmCF;;AAjCA;EACE,aAAA;AAoCF;;AAjCE;EACE,mCAAA;AAoCJ;AAlCE;EACE,mCAAA;AAoCJ;AAlCE;EACE,0CAAA;AAoCJ;;AAjCA;EACE,gBAAA;AAoCF;;AAlCA;EACE,iBAAA;EACA,iBAAA;AAqCF;AApCE;EACE,YAAA;EACA,oBAAA;AAsCJ;AApCE;EACE,cAAA;EACA,iBAAA;AAsCJ;AApCE;EACE,oBAAA;EACA,kBAAA;EACA,WAAA;AAsCJ;;AAnCA;EACE,4BAAA;EACA,UAAA;EACA,oBAAA;AAsCF;;AApCA;EACE,4BAAA;EACA,yBAAA;EACA,UAAA;AAuCF;;AArCA;EACE,4BAAA;EACA,yBAAA;EACA,UAAA;AAwCF;;AAtCA;EACE,0BAAA;EACA,UAAA;AAyCF;;AAvCA;EACE,0BAAA;EACA,UAAA;AA0CF;;AAxCA;EACE,0BAAA;EACA,UAAA;AA2CF;;AAzCA;EACE,oBAAA;AA4CF","sourcesContent":["* {\r\n  margin: 0;\r\n  padding: 0;\r\n  box-sizing: border-box;\r\n}\r\nhtml {\r\n  font-size: 62.5%;\r\n}\r\n","@import \"rest\";\r\n@import \"variables\";\r\n@import \"bouton\";\r\nbody,\r\n* {\r\n  // font-family: \"Roboto\", sans-serif;\r\n  font-family: \"Montserrat\", sans-serif;\r\n}\r\n.container {\r\n  margin: 5rem auto;\r\n  max-width: 50%;\r\n  @media screen and (max-width: 700px) {\r\n    max-width: 100%;\r\n  }\r\n}\r\nform {\r\n  display: grid;\r\n  grid-template-columns: 1fr;\r\n  background: var(--colorFond);\r\n  grid-auto-rows: auto;\r\n  text-align: center;\r\n  font-size: 1.6rem;\r\n  overflow: hidden;\r\n  row-gap: 2rem;\r\n  .form-item-0 {\r\n    font-size: 1.8rem;\r\n    text-transform: uppercase;\r\n    color: white;\r\n    padding: 2rem 0;\r\n  }\r\n  div {\r\n    display: flex;\r\n    justify-content: space-evenly;\r\n    @media screen and (max-width: 700px) {\r\n      // justify-content: center;\r\n    }\r\n\r\n    label {\r\n      flex: 0 0 150px;\r\n      text-align: right;\r\n      line-height: 3.5rem;\r\n      font-size: 1.4rem;\r\n      text-transform: uppercase;\r\n      color: white;\r\n      @media screen and (max-width: 700px) {\r\n        flex: 0 1 30%;\r\n      }\r\n    }\r\n    input {\r\n      padding: 0.8rem 1rem;\r\n      flex: 0.5 0 auto;\r\n      border-radius: 0.5rem;\r\n      border: 0;\r\n      outline: 0;\r\n    }\r\n  }\r\n}\r\n.error {\r\n  color: white;\r\n  display: block;\r\n  // background: var(--purple);\r\n  width: 90%;\r\n  transition: all 0.5s;\r\n  margin: auto;\r\n}\r\n.valid {\r\n  color: white;\r\n  display: block;\r\n  background: rgba(37, 204, 247, 0.1);\r\n  border-radius: 5px;\r\n  width: 90%;\r\n  padding: 1rem;\r\n  text-align: center;\r\n  margin: auto;\r\n}\r\n.no-valid {\r\n  display: none;\r\n}\r\n.inputColor {\r\n  &-valid {\r\n    box-shadow: 0px 0px 4px 4px #05c46b;\r\n  }\r\n  &-invalid {\r\n    box-shadow: 0px 0px 4px 4px #ff3f34;\r\n  }\r\n  &-warning {\r\n    box-shadow: 0px 0px 4px 4px var(--warning);\r\n  }\r\n}\r\nul {\r\n  list-style: none;\r\n}\r\nli {\r\n  padding: 0.5rem 0;\r\n  line-height: 2rem;\r\n  i {\r\n    color: white;\r\n    margin-right: 0.5rem;\r\n  }\r\n  .fa-check {\r\n    color: #009432;\r\n    padding: 0.5rem 0;\r\n  }\r\n  .fa-times {\r\n    color: var(--danger);\r\n    position: relative;\r\n    top: 0.1rem;\r\n  }\r\n}\r\nli:nth-child(1) {\r\n  transform: translateY(-10px);\r\n  opacity: 0;\r\n  transition: all 0.8s;\r\n}\r\nli:nth-child(2) {\r\n  transform: translateY(-10px);\r\n  transition: all 0.8s 1.6s;\r\n  opacity: 0;\r\n}\r\nli:nth-child(3) {\r\n  transform: translateY(-10px);\r\n  transition: all 0.8s 2.4s;\r\n  opacity: 0;\r\n}\r\n.apparition:nth-child(1) {\r\n  transform: translateY(0px);\r\n  opacity: 1;\r\n}\r\n.apparition:nth-child(2) {\r\n  transform: translateY(0px);\r\n  opacity: 1;\r\n}\r\n.apparition:nth-child(3) {\r\n  transform: translateY(0px);\r\n  opacity: 1;\r\n}\r\ninput {\r\n  transition: all 0.5s;\r\n}\r\n",":root {\r\n  --colordefault: #2c3e50;\r\n  --primary: #3498db;\r\n  --warning: #f1c40f;\r\n  --danger: #c0392b;\r\n  --colorFond: #70a1ff;\r\n  --purple: #e056fd;\r\n}\r\n",".btn {\r\n  padding: 1rem 1.5rem;\r\n  text-align: center;\r\n  font-size: 1.5rem;\r\n  font-weight: 700;\r\n  color: white;\r\n  background: var(--colordefault);\r\n  margin: 1rem;\r\n  border: 0;\r\n  border-radius: 0.5rem;\r\n  cursor: pointer;\r\n  &-primary {\r\n    background: var(--primary);\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
